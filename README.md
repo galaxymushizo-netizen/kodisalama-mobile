@@ -1,199 +1,152 @@
-# FindTrack 📍
+# KodiSalama 🇹🇿
 
-**Find your Bluetooth devices. Stay connected.**
+**Usimamizi wa Wapangaji** — a phone-first rental management app for Tanzanian landlords.
+Swahili UI, offline-first, ships as an **Android APK** (and also runs in any browser as a PWA).
 
-A real, installable Android application that scans for nearby Bluetooth LE devices, estimates distance from RSSI signal strength, locates devices on a map, tracks live signal in real time, and keeps a location history — all offline-first, no account required, no API keys needed.
-
-![FindTrack](https://img.shields.io/badge/platform-Android-green?logo=android)
-![Capacitor](https://img.shields.io/badge/built%20with-Capacitor-blue?logo=capacitor)
-![React](https://img.shields.io/badge/frontend-React-black?logo=react)
-![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+> 🌐 **Live:** https://galaxymushizo-netizen.github.io/kodisalama-mobile/
+> 📦 **APK download:** https://github.com/galaxymushizo-netizen/kodisalama-mobile/releases/latest
 
 ---
 
-## 📥 Download
+## Modules (tabs)
 
-### Debug APK (ready to install)
+| Tab | What it does |
+|-----|--------------|
+| **Dashibodi** | Occupancy, tenants, income this month, total debts, recent payments, quick actions |
+| **Vyumba** | Register rooms, monthly rent, location; filter by free/taken; edit & delete |
+| **Wapangaji** | Register tenants, assign rooms, NIDA, move-in/out dates, live debt badge, call/WhatsApp/SMS shortcuts |
+| **Malipo** | Record payments (cash, M-Pesa, Tigo Pesa, HaloPesa, bank…), search/filter, totals, debts view, receipt shortcut |
+| **SMS** | Generate Swahili **payment receipts** and **rent reminders**, edit the text, count SMS segments, copy / open WhatsApp / open SMS |
+| **Mikataba** | Tenancy contract (Tanzania) — Tanzanian flag at the top, autofilled from your profile & room, editable clauses, save, **print / PDF export** |
+| **Mipangilio** | Landlord profile, **daily rent reminders**, **PIN account**, storage usage, **JSON backup export/import**, credits, wipe all data |
 
-| Asset | Version | Size | Architecture |
-|---|---|---|---|
-| `FindTrack-debug.apk` | 1.3.0 | 6.4 MB | ARM64 / ARMv7 / x86 |
-
-**Direct download:**
-https://github.com/galaxymushizo-netizen/kodisalama-mobile/releases/latest
-
-### Install on your phone
-
-1. Download the APK from the release above.
-2. On your Android phone, enable **"Install unknown apps"** for your browser/file manager.
-3. Open the APK and tap **Install**.
-4. Launch **FindTrack**, grant **Bluetooth** and **Location** permissions when prompted.
-
-> **Requirements:** Android 7.0 (API 24) or higher, Bluetooth LE hardware, Location permission (Android requires it for BLE scanning).
+Everything is stored **only on the phone** (localStorage) — no server, no sync, works fully offline. The only account is a **local PIN** that locks the app; it never leaves the device.
 
 ---
 
-## ✨ Features
+## Akaunti ya PIN
 
-| Screen | What it does |
-|---|---|
-| **Home** | Map view with nearby devices, live scanning banner, floating scan button, one-tap "Start Tracking" |
-| **Devices** | Full list of discovered Bluetooth LE devices with RSSI, estimated distance, last-seen time, signal-quality badge, pull-to-refresh scan |
-| **Tracking** | Live pulsing signal gauge, approximate distance, "getting closer" status, Stop Tracking button |
-| **Finder Map** | Full-screen map with the selected device pinned, accuracy circle, last-seen location card |
-| **History** | Recent device locations with timestamps, signal strength, distance, address; last-known-location auto-saved on disconnect |
+First launch asks you to register with your name, phone number and a **4–6 digit PIN**. The PIN is never stored — only a salted SHA-256 hash (WebCrypto, with an FNV-1a fallback). Use **Mipangilio → Akaunti Yangu (PIN)** to change the PIN, lock now, or delete the account. Deleting the account removes the PIN only; your rooms, tenants and payments stay put.
 
-### Core capabilities
+## Arifa za kumbusho la kodi
 
-- **Bluetooth LE scanning** via `@capacitor-community/bluetooth-le` — discovers nearby devices and reads RSSI + MAC address
-- **RSSI → distance estimation** using the log-distance path-loss model (metres/km)
-- **Signal quality labels** — Strong / Good / Fair / Weak with color coding
-- **Deduplication by MAC address** — merges new scans with previously seen devices
-- **Persistent local storage** — devices and history survive app restarts (`localStorage`)
-- **Seeded demo data** — 5 pre-loaded devices so the app works immediately
-- **OpenStreetMap maps** — no Google Maps API key, no API credentials required
-- **PWA offline support** — Workbox service worker caches app shell and assets
-- **Local notifications** — ready for tracking alerts (`POST_NOTIFICATIONS` on Android 13+)
+**Mipangilio → Arifa za Kumbusho la Kodi** schedules a real, system-level daily reminder:
 
----
+- You pick the time; the app schedules an **exact alarm** (`USE_EXACT_ALARM`) that fires in Doze too.
+- It re-asserts the schedule on every launch, because Android drops pending alarms after a reboot, an app update, or when exact alarms get toggled off.
+- Android 13+ needs the `POST_NOTIFICATIONS` runtime permission — the app shows its live status and takes you to the OS prompt.
+- The channel deliberately omits `sound`, which makes the plugin look for a missing `res/raw/default` file and end up silent; the system default sound is used instead.
 
-## 🛠 Tech Stack
+## Live web app (GitHub Pages)
 
-| Layer | Technology |
-|---|---|
-| UI | React 19 + TypeScript |
-| Styling | Tailwind CSS 4 |
-| Build | Vite 8 |
-| Mobile shell | Capacitor 8 (Android) |
-| Bluetooth LE | `@capacitor-community/bluetooth-le` 8.3.0 |
-| Maps | Leaflet + OpenStreetMap (no API key) |
-| Offline / PWA | `vite-plugin-pwa` + Workbox |
-| Notifications | `@capacitor/local-notifications` |
-| Storage | browser `localStorage` (device-only) |
-| Android | minSdk 24 · targetSdk 36 · compileSdk 36 |
-
----
-
-## 📱 Screens
-
-**Home** — scanning banner + map + quick actions  
-**Devices** — sortable device list with signal quality  
-**Tracking** — live signal gauge & distance  
-**Finder Map** — pinned device on map with accuracy circle  
-**History** — location history with timestamps
-
----
-
-## 🚀 Build from Source
-
-Prerequisites: Node.js, JDK 17+, Android SDK (`ANDROID_HOME` set).
+A GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and deploys the PWA on every push to `main`.
+Pages is configured with **build type = workflow**, so the site is rebuilt from source each time — there is no committed build output in the repo. Every push redeploys:
 
 ```bash
-# 1. Clone
-git clone https://github.com/galaxymushizo-netizen/kodisalama-mobile.git
-cd kodisalama-mobile
-
-# 2. Install dependencies
-npm install
-
-# 3. Build web app + sync to Android + assemble debug APK
-npm run apk
+git push origin main          # → https://<user>.github.io/kodisalama-mobile/
 ```
 
-The debug APK is written to:
+The build reads `BASE_PATH` so assets, the manifest and the service worker all live under `/kodisalama-mobile/`. Set it locally the same way if you want to preview exactly what Pages will serve:
+
+```bash
+BASE_PATH=/kodisalama-mobile/ npm run build   # PowerShell: $env:BASE_PATH='/kodisalama-mobile/'; npm run build
+```
+
+> Related repos: [`kodisalama`](https://github.com/galaxymushizo-netizen/kodisalama) (Next.js + PostgreSQL server edition) and [`kodisalama-apk`](https://github.com/galaxymushizo-netizen/kodisalama-apk) (APK releases + `update.json`). This repo is the self-contained offline edition — no database, no SMS gateway, no account server.
+
+---
+
+## Run in a browser (development)
+
+```bash
+npm install
+npm run dev          # http://localhost:5173  (also reachable from your phone on the same Wi-Fi)
+```
+
+The dev server binds `0.0.0.0`, so on your phone open `http://<your-pc-ip>:5173`.
+
+---
+
+## Build the Android APK
+
+Prerequisites (already present on this machine): **JDK 17**, **Android SDK** (`ANDROID_HOME`), and network access for the first Gradle/dependency download.
+
+```bash
+# 1. Build the web app and copy it into the Android project
+npm run build
+npx cap sync android
+
+# 2. Compile the APK
+cd android
+gradlew assembleDebug          # Windows: .\gradlew.bat assembleDebug
+```
+
+The APK is written to:
 
 ```
 android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### One-step
+### Install it on a phone
+
+- **USB:** enable Developer options → USB debugging, connect, then
+  `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`
+- **Or copy** `app-debug.apk` to the phone and open it (allow "install unknown apps").
+
+For a Play-Store / shareable release build you need a signing keystore:
+
+```bash
+cd android
+gradlew assembleRelease
+```
+
+### One-shot script
 
 ```bash
 npm run apk
 ```
 
-### Release build (Play Store)
+= `build → cap sync → gradlew assembleDebug`.
 
-You need your own signing keystore:
+---
+
+## Regenerating the icons
 
 ```bash
-keytool -genkeypair -v -keystore findtrack-release.keystore \
-  -alias findtrack -keyalg RSA -keysize 2048 -validity 10000
-
-# Add signing config to android/app/build.gradle (release buildType), then:
-cd android
-gradlew assembleRelease
+npm run icons            # PWA icons (public/icons, apple-touch-icon, favicon)
+npm run icons:android    # Android launcher icons + splash screens
 ```
 
----
-
-## 🔐 Permissions
-
-| Permission | Purpose |
-|---|---|
-| `BLUETOOTH_SCAN` / `BLUETOOTH_CONNECT` | Discover nearby BLE devices |
-| `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` | Android requires location for BLE scans |
-| `INTERNET` / `ACCESS_NETWORK_STATE` | Load OpenStreetMap tiles |
-| `POST_NOTIFICATIONS` | Tracking alerts |
-| `FOREGROUND_SERVICE_BLUETOOTH_SCAN` | Keep scanning alive while app is open |
-| `WRITE_EXTERNAL_STORAGE` (max SDK 28) | Legacy backup support |
+Both scripts use PowerShell + System.Drawing (no image tooling required).
 
 ---
 
-## 📦 Project Structure
+## Project structure
 
 ```
-kodisalama-mobile/
-├── src/
-│   ├── App.tsx                 # App shell + tab routing
-│   ├── main.tsx                # React entry point
-│   ├── index.css               # Design tokens + base styles
-│   ├── index.html              # HTML shell
-│   ├── components/
-│   │   ├── Shell.tsx           # Bottom nav, header, slide-out menu
-│   │   ├── ui.tsx              # DeviceCard, SignalGauge, DeviceIcon, EmptyState
-│   │   └── MapView.tsx         # Leaflet map with device markers
-│   ├── pages/
-│   │   ├── Home.tsx            # Home screen
-│   │   ├── Devices.tsx         # Device list + scan
-│   │   ├── Tracking.tsx        # Live signal tracking
-│   │   ├── FinderMap.tsx       # Full-screen device map
-│   │   └── History.tsx         # Location history
-│   └── lib/
-│       ├── ble.ts              # BLE wrapper, scan, RSSI→device
-│       ├── distance.ts         # RSSI→distance, signal labels
-│       └── store.ts            # localStorage persistence
-├── android/                    # Capacitor Android project
-├── capacitor.config.ts         # Capacitor configuration
-├── package.json
-├── INSTALL.md                  # Installation guide
-├── FEATURES.md                 # Feature list
-├── TESTING.md                  # Test summary & limitations
-└── README.md                   # This file
+src/
+  lib/
+    types.ts     # domain models (rooms, tenants, payments, contracts, templates, notifications)
+    store.tsx    # React context + localStorage persistence + all mutations
+    auth.tsx     # local account + PIN gate (sign-up, lock screen, hash-only storage)
+    notify.ts    # permission, exact alarms, channel, scheduling, test reminder
+    symbol.ts    # Tanzanian flag asset paths + attribution
+    calc.ts      # occupancy, debts, monthly income, message builders
+    format.ts    # TZS money, Swahili dates, phone normalisation, SMS segment count
+    nav.ts       # cross-tab navigation intents
+  components/
+    Shell.tsx    # green header, slide-in menu, 7-tab bottom nav (safe-area aware)
+    ui.tsx       # Card, Btn, Field, Modal (bottom sheet), Chip, EmptyState, Toast…
+  pages/         # Dashboard, Rooms, Tenants, Payments, Sms, Contracts, Settings
+android/         # Capacitor Android project
+scripts/         # icon & splash generators
 ```
 
----
+### Debt calculation
 
-## 🧪 Testing & Known Limitations
+For a sitting tenant: `months = full months since move-in + 1` (the current month is due),
+`expected = rent × months`, `balance = max(0, expected − everything paid)`.
 
-See `TESTING.md` for full details.
+### Data format
 
-**Build verification:** TypeScript compile ✅ · Vite production build ✅ · Capacitor sync ✅ · Gradle debug build ✅ · APK artifact (6.4 MB) ✅
-
-**Limitations:**
-- No physical device / emulator testing was performed in this environment (runtime BLE, permissions, map tiles on device unverified)
-- RSSI distance is an estimate (varies with obstacles/interference)
-- Debug APK only — release build requires your own signing keystore
-- No cloud sync / accounts — data stays on the device only (offline-first by design)
-
----
-
-## 📄 License
-
-MIT License — see [LICENSE](LICENSE).
-
----
-
-## 🤝 Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+`localStorage["kodisalama:data:v1"]` → exported/imported verbatim by **Mipangilio → Pakua/Rejesha Nakala**.
