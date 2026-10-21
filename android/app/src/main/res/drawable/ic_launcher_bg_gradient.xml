@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive-icon background. Mirrors the light mint tile used by the legacy
+     mipmaps and the PWA icons (#f0fdf4 -> #dcfce7, top-left to bottom-right),
+     so the green key stays legible instead of sitting on dark green. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="315"
+        android:startColor="#f0fdf4"
+        android:endColor="#dcfce7"
+        android:type="linear" />
+</shape>

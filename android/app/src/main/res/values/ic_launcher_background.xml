@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fallback flat colour; the adaptive icon uses the gradient drawable. -->
+    <color name="ic_launcher_background">#dcfce7</color>
+</resources>
