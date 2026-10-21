@@ -7,6 +7,7 @@ import { addMonths, fmtDate, money, num, todayISO } from '../lib/format'
 import { bytesToBase64, saveFile } from '../lib/files'
 import { DEFAULT_CLAUSES, type Contract } from '../lib/types'
 import { FLAG_CREDIT, FLAG_PDF_SRC, FLAG_SRC, loadImage } from '../lib/symbol'
+import { isNative } from '../lib/notify'
 import { Btn, Card, Confirm, Field, Input, PageHead, Select, Toast } from '../components/ui'
 import type { Intent } from '../lib/nav'
 
@@ -82,8 +83,16 @@ export default function Contracts({
     setToast('Mkataba umehifadhiwa')
   }
 
-  const print = () => {
+  const print = async () => {
     if (!form.tenantId) return setToast('Chagua mpangaji kwanza')
+    // Android's WebView exposes no print bridge, so window.print() silently
+    // does nothing there. Hand the user a PDF instead — it prints from any
+    // PDF viewer, and the same sheet is what would have been printed anyway.
+    if (isNative()) {
+      await exportPdf()
+      setToast('PDF imefunguliwa — chagua "Chapisha" kwenye programu ya PDF')
+      return
+    }
     window.print()
   }
 

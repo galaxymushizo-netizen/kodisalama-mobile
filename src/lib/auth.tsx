@@ -209,7 +209,7 @@ function BrandMark({ title, subtitle }: { title: string; subtitle: string }) {
         draggable={false}
         className="mx-auto h-11 w-auto select-none rounded-[3px] ring-1 ring-slate-200 shadow-sm"
       />
-      <div className="mx-auto -mt-2 grid h-14 w-14 place-items-center rounded-2xl bg-brand-700 ring-1 ring-white/20">
+      <div className="mx-auto mt-5 grid h-14 w-14 place-items-center rounded-2xl bg-brand-700 ring-1 ring-white/20">
         <Fingerprint size={26} className="text-white" />
       </div>
       <h1 className="mt-4 text-2xl font-extrabold tracking-tight">{title}</h1>

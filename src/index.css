@@ -242,8 +242,14 @@
 
 /* Print / PDF contract sheet */
 @media print {
+  @page {
+    /* The sheet's own padding is zeroed below, so page margins carry the
+       breathing room instead of double-stacking with it. */
+    margin: 14mm;
+  }
   body {
     background: #fff;
+    margin: 0;
   }
   .no-print {
     display: none !important;
@@ -252,10 +258,22 @@
     position: static !important;
     inset: auto !important;
     display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
+    border: 0 !important;
     border-radius: 0 !important;
+    box-shadow: none !important;
     max-height: none !important;
     overflow: visible !important;
+    font-size: 12pt !important;
+  }
+  /* Browsers drop colours when printing unless told otherwise — this keeps
+     the Tanzanian flag on the contract header in full colour. */
+  .print-sheet img {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 }

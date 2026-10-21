@@ -6,9 +6,13 @@ Add-Type -AssemblyName System.Drawing
 $root = Split-Path -Parent $PSScriptRoot
 $res = Join-Path $root 'android\app\src\main\res'
 
-$tileLight = [System.Drawing.Color]::FromArgb(255, 240, 253, 244) # #f0fdf4
-$tileDark  = [System.Drawing.Color]::FromArgb(255, 220, 252, 231) # #dcfce7
-$keyLight  = [System.Drawing.Color]::FromArgb(255, 22, 163, 74)   # #16a34a
+# Tile is a real green (green-100 → green-300) rather than the near-white mint
+# it used to be — on a launcher grid the old tile washed out against other apps.
+# The key is darkened one step (green-700 → green-900) to keep it legible:
+# #16a34a on #86efac measures only 2.3:1, whereas #15803d measures 3.6:1.
+$tileLight = [System.Drawing.Color]::FromArgb(255, 220, 252, 231) # #dcfce7
+$tileDark  = [System.Drawing.Color]::FromArgb(255, 134, 239, 172) # #86efac
+$keyLight  = [System.Drawing.Color]::FromArgb(255, 21, 128, 61)   # #15803d
 $keyDark   = [System.Drawing.Color]::FromArgb(255, 20, 83, 45)    # #14532d
 
 function Get-TileBrush($rect) {
@@ -32,7 +36,7 @@ function New-Launcher {
   $g.FillRectangle($tb, $rect)
   $tb.Dispose()
   $kb = Get-KeyBrush $size
-  Draw-KeyGlyph $g ($size / 2.0) ($size / 2.0) ([double]($size * 0.58)) $kb -45
+  Draw-KeyGlyph $g ($size / 2.0) ($size / 2.0) ([double]($size * 0.62)) $kb -45
   $kb.Dispose()
   $g.Dispose()
   $bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
@@ -40,7 +44,8 @@ function New-Launcher {
 }
 
 function New-Foreground {
-  # Adaptive icon: 108dp canvas, key kept inside the 66dp safe zone (0.42 of canvas)
+  # Adaptive icon: 108dp canvas. The key sits inside the 66dp safe zone — measured
+  # on a 44-cell render, nothing may fall beyond 13.4 cells from centre.
   param([int]$size, [string]$path)
   $bmp = New-Object System.Drawing.Bitmap($size, $size)
   $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -48,7 +53,7 @@ function New-Foreground {
   $g.PixelOffsetMode = 'HighQuality'
   $g.Clear([System.Drawing.Color]::Transparent)
   $kb = Get-KeyBrush $size
-  Draw-KeyGlyph $g ($size / 2.0) ($size / 2.0) ([double]($size * 0.42)) $kb -45
+  Draw-KeyGlyph $g ($size / 2.0) ($size / 2.0) ([double]($size * 0.62)) $kb -45
   $kb.Dispose()
   $g.Dispose()
   $bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)

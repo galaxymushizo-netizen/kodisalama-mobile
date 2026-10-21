@@ -250,7 +250,7 @@ export function Confirm({
 export function Toast({ msg }: { msg: string | null }) {
   if (!msg) return null
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex justify-center px-6">
+    <div className="no-print pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex justify-center px-6">
       <div className="fade rounded-full bg-slate-900/90 px-4 py-2.5 text-sm font-semibold text-white shadow-lg">
         {msg}
       </div>

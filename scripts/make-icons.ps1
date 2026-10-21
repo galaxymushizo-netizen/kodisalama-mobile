@@ -8,10 +8,12 @@ $out = Join-Path $root 'public'
 $iconDir = Join-Path $out 'icons'
 New-Item -ItemType Directory -Force -Path $iconDir | Out-Null
 
-$keyLight = [System.Drawing.Color]::FromArgb(255, 22, 163, 74)   # #16a34a
+# Same palette as scripts/make-android-assets.ps1 — keep the two in step so the
+# PWA icon and the Android launcher icon are visually identical.
+$tileLight = [System.Drawing.Color]::FromArgb(255, 220, 252, 231) # #dcfce7
+$tileDark  = [System.Drawing.Color]::FromArgb(255, 134, 239, 172) # #86efac
+$keyLight = [System.Drawing.Color]::FromArgb(255, 21, 128, 61)   # #15803d
 $keyDark  = [System.Drawing.Color]::FromArgb(255, 20, 83, 45)    # #14532d
-$tileLight = [System.Drawing.Color]::FromArgb(255, 240, 253, 244) # #f0fdf4
-$tileDark  = [System.Drawing.Color]::FromArgb(255, 220, 252, 231) # #dcfce7
 
 function New-KeyTile {
   param([int]$size, [bool]$rounded, [double]$keyLen, [double]$angle)
@@ -61,10 +63,10 @@ function New-KeyTile {
 }
 
 $jobs = @(
-  @{ name = 'icon-192.png';         size = 192; rounded = $true;  len = 0.56; angle = -45 },
-  @{ name = 'icon-512.png';         size = 512; rounded = $true;  len = 0.56; angle = -45 },
-  @{ name = 'icon-maskable-512.png'; size = 512; rounded = $false; len = 0.42; angle = -45 },
-  @{ name = '../apple-touch-icon.png'; size = 180; rounded = $false; len = 0.54; angle = -45 }
+  @{ name = 'icon-192.png';         size = 192; rounded = $true;  len = 0.60; angle = -45 },
+  @{ name = 'icon-512.png';         size = 512; rounded = $true;  len = 0.60; angle = -45 },
+  @{ name = 'icon-maskable-512.png'; size = 512; rounded = $false; len = 0.60; angle = -45 },
+  @{ name = '../apple-touch-icon.png'; size = 180; rounded = $false; len = 0.58; angle = -45 }
 )
 
 foreach ($j in $jobs) {
