@@ -1,100 +1,59 @@
-# Generates KodiSalama PWA icons (192 / 512 / maskable / apple-touch / favicon)
-# All of them show a green key (funguo ya kijani) on a light mint tile.
+# Generates KodiSalama PWA icons (192 / 512 / maskable / apple-touch / favicon).
+# Every one of them is the house-and-keyhole mark on a green gradient tile —
+# the same drawing scripts/housemark.ps1 produces for the Android launcher, so
+# the website and the app icon can never drift apart.
 Add-Type -AssemblyName System.Drawing
-. (Join-Path $PSScriptRoot 'keyglyph.ps1')
+. (Join-Path $PSScriptRoot 'housemark.ps1')
 
 $root = Split-Path -Parent $PSScriptRoot
 $out = Join-Path $root 'public'
 $iconDir = Join-Path $out 'icons'
 New-Item -ItemType Directory -Force -Path $iconDir | Out-Null
 
-# Same palette as scripts/make-android-assets.ps1 — keep the two in step so the
-# PWA icon and the Android launcher icon are visually identical.
-$tileLight = [System.Drawing.Color]::FromArgb(255, 220, 252, 231) # #dcfce7
-$tileDark  = [System.Drawing.Color]::FromArgb(255, 134, 239, 172) # #86efac
-$keyLight = [System.Drawing.Color]::FromArgb(255, 21, 128, 61)   # #15803d
-$keyDark  = [System.Drawing.Color]::FromArgb(255, 20, 83, 45)    # #14532d
-
-function New-KeyTile {
-  param([int]$size, [bool]$rounded, [double]$keyLen, [double]$angle)
-  $bmp = New-Object System.Drawing.Bitmap($size, $size)
-  $g = [System.Drawing.Graphics]::FromImage($bmp)
-  $g.SmoothingMode = 'AntiAlias'
-  $g.TextRenderingHint = 'AntiAliasGridFit'
-  $g.PixelOffsetMode = 'HighQuality'
-  $g.Clear([System.Drawing.Color]::Transparent)
-
-  $rect = New-Object System.Drawing.Rectangle(0, 0, $size, $size)
-
-  if ($rounded) {
-    $radius = [int]($size * 0.20)
-    $path = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $d = $radius * 2
-    $path.AddArc($rect.X, $rect.Y, $d, $d, 180, 90)
-    $path.AddArc($rect.Right - $d, $rect.Y, $d, $d, 270, 90)
-    $path.AddArc($rect.Right - $d, $rect.Bottom - $d, $d, $d, 0, 90)
-    $path.AddArc($rect.X, $rect.Bottom - $d, $d, $d, 90, 90)
-    $path.CloseFigure()
-    $brush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-      $rect, $tileLight, $tileDark, [System.Drawing.Drawing2D.LinearGradientMode]::ForwardDiagonal)
-    $g.FillPath($brush, $path)
-    $brush.Dispose(); $path.Dispose()
-  } else {
-    $brush = New-Object System.Drawing.SolidBrush($tileLight)
-    $g.FillRectangle($brush, $rect)
-    $brush.Dispose()
-  }
-
-  # Soft drop shadow under the key so it lifts off the tile
-  $shadow = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(30, 20, 83, 45))
-  $off = [double]$size * 0.012
-  Draw-KeyGlyph $g ($size / 2.0 + $off) ($size / 2.0 + $off) ([double]($size * $keyLen)) $shadow $angle
-  $shadow.Dispose()
-
-  # The green key itself
-  $keyBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-    (New-Object System.Drawing.RectangleF(0, 0, [float]$size, [float]$size)),
-    $keyLight, $keyDark, [System.Drawing.Drawing2D.LinearGradientMode]::ForwardDiagonal)
-  Draw-KeyGlyph $g ($size / 2.0) ($size / 2.0) ([double]($size * $keyLen)) $keyBrush $angle
-  $keyBrush.Dispose()
-
-  $g.Dispose()
-  return $bmp
-}
-
+# radius/scale are fractions of the icon's edge.
+#   rounded    -> tile gets the 0.20 corner radius the browser stores on disk
+#   maskable   -> tile must be full-bleed (the launcher cuts its own mask) and
+#                 the mark is inset, since Google's maskable safe zone is the
+#                 circle covering 80% of the width. The mark reaches 199 units
+#                 from its centre in 512-space, so scale has to stay under
+#                 204.8 / 199 = 1.03 to be safe; 0.80 leaves visible slack.
 $jobs = @(
-  @{ name = 'icon-192.png';         size = 192; rounded = $true;  len = 0.60; angle = -45 },
-  @{ name = 'icon-512.png';         size = 512; rounded = $true;  len = 0.60; angle = -45 },
-  @{ name = 'icon-maskable-512.png'; size = 512; rounded = $false; len = 0.60; angle = -45 },
-  @{ name = '../apple-touch-icon.png'; size = 180; rounded = $false; len = 0.58; angle = -45 }
+  @{ name = 'icon-192.png';            size = 192; rounded = $true;  radius = 0.20; scale = 1.00 }
+  @{ name = 'icon-512.png';            size = 512; rounded = $true;  radius = 0.20; scale = 1.00 }
+  @{ name = 'icon-maskable-512.png';   size = 512; rounded = $false; radius = 0;    scale = 0.80 }
+  @{ name = '../apple-touch-icon.png'; size = 180; rounded = $false; radius = 0;    scale = 0.90 }
 )
 
 foreach ($j in $jobs) {
-  $bmp = New-KeyTile -size $j.size -rounded $j.rounded -keyLen $j.len -angle $j.angle
+  $bmp = New-Object System.Drawing.Bitmap($j.size, $j.size)
+  $g = [System.Drawing.Graphics]::FromImage($bmp)
+  Draw-HouseMark -g $g -size ([double]$j.size) -rounded ([bool]$j.rounded) `
+    -radius ([int]($j.size * $j.radius)) -scale ([double]$j.scale)
+  $g.Dispose()
   $path = Join-Path $iconDir $j.name
   $bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
   $bmp.Dispose()
   Write-Host "wrote $path"
 }
 
-# favicon.svg — same key, drawn as vector paths
+# favicon.svg — the same mark, written as vector so it stays sharp in a tab.
+# Geometry mirrors Draw-HouseGlyph exactly (512-space authoring).
 $favicon = @'
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="t" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f0fdf4"/><stop offset="1" stop-color="#dcfce7"/>
-    </linearGradient>
-    <linearGradient id="k" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#16a34a"/><stop offset="1" stop-color="#14532d"/>
+    <linearGradient id="t" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#066e2a"/><stop offset="1" stop-color="#40e860"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#t)"/>
-  <g transform="translate(32 32) rotate(-45) scale(0.3073) translate(-21 1.5)" fill="url(#k)">
-    <path d="M-20,-20 A20,20 0 1,1 -20,20 A20,20 0 1,1 -20,-20 Z M-12,-12 A12,12 0 1,0 -12,12 A12,12 0 1,0 -12,-12 Z" fill-rule="evenodd"/>
-    <rect x="12" y="-4.5" width="50" height="9"/>
-    <rect x="46" y="4.5" width="7" height="12.5"/>
-    <rect x="55" y="4.5" width="7" height="9"/>
-  </g>
+  <rect width="512" height="512" rx="110" fill="url(#t)"/>
+  <rect x="322" y="96" width="50" height="88" fill="#fff"/>
+  <path d="M92 232 L252 88 L422 232" fill="none" stroke="#fff"
+        stroke-width="29" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="132" y="168" width="258" height="224" rx="10" fill="#fff"/>
+  <path fill-rule="evenodd" fill="#0b762d"
+        d="M204 272 A52 52 0 1 1 308 272 A52 52 0 1 1 204 272 Z
+           M233 272 A23 23 0 1 1 279 272 A23 23 0 1 1 233 272 Z"/>
+  <path fill="#0b762d" d="M238 292 L274 292 L270 402 L256 430 L242 402 Z"/>
 </svg>
 '@
 Set-Content -Path (Join-Path $out 'favicon.svg') -Value $favicon -Encoding UTF8

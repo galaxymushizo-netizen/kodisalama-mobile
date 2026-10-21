@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Fallback flat colour; the adaptive icon uses the gradient drawable. -->
-    <color name="ic_launcher_background">#86efac</color>
+    <!-- Fallback flat colour; the adaptive icon uses the gradient drawable.
+         Midpoint of the #066e2a -> #40e860 tile gradient. -->
+    <color name="ic_launcher_background">#23ab45</color>
 </resources>

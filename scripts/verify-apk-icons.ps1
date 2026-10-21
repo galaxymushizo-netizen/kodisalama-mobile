@@ -1,5 +1,6 @@
 # Verifies the launcher icons, fonts and notification icon inside the built APK.
-# Renders the key shape as ASCII so it can be eyeballed without an emulator.
+# Renders the house mark as ASCII so it can be eyeballed without an emulator.
+#   # = the white house, o = the green keyhole, : = the green tile, . = nothing
 param(
   [string]$Apk = "$PSScriptRoot\..\android\app\build\outputs\apk\debug\app-debug.apk"
 )
@@ -33,8 +34,9 @@ function Show-Grid([string]$entryName, [int]$n) {
       $py = [int]($y * $b.Height / $n)
       $p = $b.GetPixel($px, $py)
       if ($p.A -lt 40) { $line += '.' }
-      elseif ($p.R -lt 120) { $line += '#' }   # dark green key
-      else { $line += ':' }                    # light mint tile
+      elseif ($p.R -ge 200 -and $p.G -ge 200 -and $p.B -ge 200) { $line += '#' } # white house
+      elseif ($p.R -lt 60 -and $p.G -lt 160) { $line += 'o' }                    # green keyhole
+      else { $line += ':' }                                                       # green tile
     }
     Write-Host $line
   }
@@ -51,7 +53,7 @@ Write-Host '--- required entries ---'
 foreach ($name in @(
     'res/mipmap-anydpi-v26/ic_launcher.xml',
     'res/drawable/ic_launcher_bg_gradient.xml',
-    'res/drawable/ic_stat_key.xml',
+    'res/drawable/ic_stat_house.xml',
     'assets/public/fonts/pjs-latin.woff2',
     'assets/public/fonts/fonts.css',
     'assets/public/symbol/tz-flag-320.png',
@@ -85,11 +87,11 @@ foreach ($f in @(
   if (Test-Path $p) { Write-Host "### $f"; Get-Content $p -Raw }
 }
 
-Write-Host '--- legacy launcher (light tile + green key) ---'
+Write-Host '--- legacy launcher (green tile + white house) ---'
 Show-Grid 'res/mipmap-xxxhdpi-v4/ic_launcher.png' 44
 
 Write-Host ''
-Write-Host '--- adaptive foreground (key only, transparent bg) ---'
+Write-Host '--- adaptive foreground (house + keyhole, transparent bg) ---'
 Show-Grid 'res/mipmap-xxxhdpi-v4/ic_launcher_foreground.png' 44
 
 $zip.Dispose()

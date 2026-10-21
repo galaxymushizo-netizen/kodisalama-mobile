@@ -1,66 +1,53 @@
-# Generates KodiSalama Android launcher icons (legacy + adaptive) and splash screens
-# — all showing the green key (funguo ya kijani).
+# Generates KodiSalama Android launcher icons (legacy + adaptive) and splash
+# screens — all showing the house-and-keyhole mark, matching the PWA icons.
 Add-Type -AssemblyName System.Drawing
-. (Join-Path $PSScriptRoot 'keyglyph.ps1')
+. (Join-Path $PSScriptRoot 'housemark.ps1')
 
 $root = Split-Path -Parent $PSScriptRoot
 $res = Join-Path $root 'android\app\src\main\res'
 
-# Tile is a real green (green-100 → green-300) rather than the near-white mint
-# it used to be — on a launcher grid the old tile washed out against other apps.
-# The key is darkened one step (green-700 → green-900) to keep it legible:
-# #16a34a on #86efac measures only 2.3:1, whereas #15803d measures 3.6:1.
-$tileLight = [System.Drawing.Color]::FromArgb(255, 220, 252, 231) # #dcfce7
-$tileDark  = [System.Drawing.Color]::FromArgb(255, 134, 239, 172) # #86efac
-$keyLight  = [System.Drawing.Color]::FromArgb(255, 21, 128, 61)   # #15803d
-$keyDark   = [System.Drawing.Color]::FromArgb(255, 20, 83, 45)    # #14532d
-
-function Get-TileBrush($rect) {
+# Adaptive-icon background. The mark's keyhole is painted in $script:KeyholeGreen,
+# so the layer behind it has to be the same gradient the PWA tile uses or the
+# foreground and background will visibly disagree.
+function Get-BackdropBrush($rect) {
+  # Bright end first — see the note in Draw-HouseMark: GDI+ BackwardDiagonal
+  # starts at the top-right, and the launcher background must read the same way
+  # as the adaptive icon's foreground would suggest.
   return New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-    $rect, $tileLight, $tileDark, [System.Drawing.Drawing2D.LinearGradientMode]::ForwardDiagonal)
-}
-function Get-KeyBrush($size) {
-  return New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-    (New-Object System.Drawing.RectangleF(0, 0, [float]$size, [float]$size)),
-    $keyLight, $keyDark, [System.Drawing.Drawing2D.LinearGradientMode]::ForwardDiagonal)
+    $rect, $script:TileBright, $script:TileDark,
+    [System.Drawing.Drawing2D.LinearGradientMode]::BackwardDiagonal)
 }
 
 function New-Launcher {
+  # Legacy (pre-API-26) icons are plain squares that Android masks itself, so
+  # the tile runs full-bleed with no corner radius.
   param([int]$size, [string]$path)
   $bmp = New-Object System.Drawing.Bitmap($size, $size)
   $g = [System.Drawing.Graphics]::FromImage($bmp)
-  $g.SmoothingMode = 'AntiAlias'
-  $g.PixelOffsetMode = 'HighQuality'
-  $rect = New-Object System.Drawing.Rectangle(0, 0, $size, $size)
-  $tb = Get-TileBrush $rect
-  $g.FillRectangle($tb, $rect)
-  $tb.Dispose()
-  $kb = Get-KeyBrush $size
-  Draw-KeyGlyph $g ($size / 2.0) ($size / 2.0) ([double]($size * 0.62)) $kb -45
-  $kb.Dispose()
+  Draw-HouseMark -g $g -size ([double]$size) -rounded $false -radius 0 -scale 1.0
   $g.Dispose()
   $bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
   $bmp.Dispose()
 }
 
 function New-Foreground {
-  # Adaptive icon: 108dp canvas. The key sits inside the 66dp safe zone — measured
-  # on a 44-cell render, nothing may fall beyond 13.4 cells from centre.
+  # Adaptive icon: a 108dp canvas whose usable area is a 66dp circle centred on
+  # the icon. The mark reaches 199 units from its centre in 512-space, and
+  # 33/108 * 512 = 156.7 units are safe, so scale must stay under 0.79.
+  # 0.72 leaves roughly 9% slack for launcher-specific masks.
   param([int]$size, [string]$path)
   $bmp = New-Object System.Drawing.Bitmap($size, $size)
   $g = [System.Drawing.Graphics]::FromImage($bmp)
-  $g.SmoothingMode = 'AntiAlias'
-  $g.PixelOffsetMode = 'HighQuality'
   $g.Clear([System.Drawing.Color]::Transparent)
-  $kb = Get-KeyBrush $size
-  Draw-KeyGlyph $g ($size / 2.0) ($size / 2.0) ([double]($size * 0.62)) $kb -45
-  $kb.Dispose()
+  Draw-HouseGlyph -g $g -size ([double]$size) -scale 0.72
   $g.Dispose()
   $bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
   $bmp.Dispose()
 }
 
 function New-Splash {
+  # Re-paints a splash background with the launcher gradient and centres the
+  # mark on it. Portrait and landscape keep whatever size they already had.
   param([string]$srcPath, [string]$outPath)
   $src = [System.Drawing.Image]::FromFile($srcPath)
   $w = $src.Width
@@ -71,12 +58,14 @@ function New-Splash {
   $g.SmoothingMode = 'AntiAlias'
   $g.PixelOffsetMode = 'HighQuality'
   $rect = New-Object System.Drawing.Rectangle(0, 0, $w, $h)
-  $tb = Get-TileBrush $rect
+  $tb = Get-BackdropBrush $rect
   $g.FillRectangle($tb, $rect)
   $tb.Dispose()
-  $kb = Get-KeyBrush ([Math]::Min($w, $h))
-  Draw-KeyGlyph $g ($w / 2.0) ($h / 2.0) ([double]([Math]::Min($w, $h) * 0.34)) $kb -45
-  $kb.Dispose()
+  # The mark is ~342 units tall inside its 512 box, so scale 0.75 puts the house
+  # at roughly half the shorter screen edge — the presence a splash logo needs,
+  # and the same fraction the adaptive launcher icon uses.
+  Draw-HouseGlyph -g $g -size ([double]([Math]::Min($w, $h))) -scale 0.75 `
+    -cx ($w / 2.0) -cy ($h / 2.0)
   $g.Dispose()
   $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
   $bmp.Dispose()

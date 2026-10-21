@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar icon for local notifications. Android flattens notification
+     icons to a single tint, so this is the launcher mark reduced to one
+     silhouette: the white house (roof slab, body, and the gap between them)
+     with the keyhole punched straight through it. The chimney and the ring
+     inside the keyhole are dropped because neither survives at 24dp. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M1.4,12.4 L12,2.6 L22.6,12.4 L22.6,14.1 L12,4.3 L1.4,14.1 Z M4.3,13.6 L19.7,13.6 L19.7,21.5 L4.3,21.5 Z M9.8,16.2 A2.2,2.2 0 1,1 14.2,16.2 L13.2,17 L13.2,19.6 L12,20.6 L10.8,19.6 L10.8,17 Z" />
+</vector>
