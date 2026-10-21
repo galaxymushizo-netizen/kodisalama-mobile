@@ -39,14 +39,16 @@ First launch asks you to register with your name, phone number and a **4–6 dig
 A GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and deploys the PWA on every push to `main`:
 
 ```bash
-git push origin main          # → https://<user>.github.io/kodisalama/
+git push origin main          # → https://<user>.github.io/kodisalama-mobile/
 ```
 
-The build reads `BASE_PATH` so assets, the manifest and the service worker all live under `/kodisalama/`. Set it locally the same way if you want to preview exactly what Pages will serve:
+The build reads `BASE_PATH` so assets, the manifest and the service worker all live under `/kodisalama-mobile/`. Set it locally the same way if you want to preview exactly what Pages will serve:
 
 ```bash
-BASE_PATH=/kodisalama/ npm run build   # PowerShell: $env:BASE_PATH='/kodisalama/'; npm run build
+BASE_PATH=/kodisalama-mobile/ npm run build   # PowerShell: $env:BASE_PATH='/kodisalama-mobile/'; npm run build
 ```
+
+> Related repos: [`kodisalama`](https://github.com/galaxymushizo-netizen/kodisalama) (Next.js + PostgreSQL server edition) and [`kodisalama-apk`](https://github.com/galaxymushizo-netizen/kodisalama-apk) (APK releases + `update.json`). This repo is the self-contained offline edition — no database, no SMS gateway, no account server.
 
 ---
 
