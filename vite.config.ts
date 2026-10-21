@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -7,9 +10,20 @@ import { VitePWA } from 'vite-plugin-pwa'
 // and the Android (Capacitor) build all serve it from the root.
 const base = process.env.BASE_PATH ?? '/'
 
+// package.json is the single source of truth for the app version. It is injected
+// into the bundle below, mirrored into build.gradle by
+// scripts/sync-android-version.ps1, and the GitHub release is tagged with it —
+// that is what lib/update.ts compares against.
+const { version } = JSON.parse(
+  readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), 'package.json'), 'utf8'),
+) as { version: string }
+
 // https://vite.dev/config/
 export default defineConfig({
   base,
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+  },
   plugins: [
     react(),
     tailwindcss(),

@@ -1,20 +1,28 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import {
+  AlertTriangle,
   Bell,
   BellRing,
+  CheckCheck,
   DatabaseBackup,
   Download,
+  ExternalLink,
   HardDrive,
   KeyRound,
   Lock,
+  RefreshCw,
   ShieldCheck,
   Trash2,
   Upload,
   User,
+  WifiOff,
 } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { useAuth, isValidPin, PIN_LENGTH } from '../lib/auth'
 import { FLAG_CREDIT, FLAG_SRC } from '../lib/symbol'
+import { openExternal } from '../lib/link'
+import { checkForUpdate, type UpdateStatus } from '../lib/update'
+import { APP_VERSION } from '../lib/version'
 import {
   cancelReminder,
   describeSchedule,
@@ -62,6 +70,16 @@ export default function Settings() {
   const [toast, setToast] = useState<string | null>(null)
   const [wipe, setWipe] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  /* -------------------------------- Updates --------------------------------- */
+  const [upd, setUpd] = useState<UpdateStatus>({ state: 'idle' })
+
+  const runCheck = async () => {
+    setUpd({ state: 'checking' })
+    // `checkForUpdate` never throws — offline and blocked networks both resolve
+    // to a calm status, so there is no error path to swallow here.
+    setUpd(await checkForUpdate())
+  }
 
   /* ------------------------------ Notifications ----------------------------- */
   const [perm, setPerm] = useState<PermissionState>('prompt')
@@ -673,6 +691,103 @@ export default function Settings() {
         </Btn>
       </Card>
 
+      {/* ------------------------------ Updates ------------------------------- */}
+      <Card className="mb-4">
+        <h2 className="text-lg leading-snug font-extrabold">Sasisho</h2>
+        <p className="mt-1 text-sm text-muted">
+          KodiSalama imepakuliwa kwa mkono (sideload), kwa hivyo haipokei masasisho
+          kwa kiotomatiki kama programu za Play Store. Angalia hapa kama kuna toleo jipya.
+        </p>
+
+        <div className="mt-3 rounded-2xl border border-slate-200 p-4">
+          {upd.state === 'available' ? (
+            <>
+              <div className="flex items-start gap-3">
+                <Download size={18} className="mt-0.5 shrink-0 text-brand-700" />
+                <div className="min-w-0">
+                  <div className="text-sm font-extrabold">
+                    Toleo jipya lipo: v{upd.version}
+                  </div>
+                  <p className="mt-0.5 text-sm text-muted">
+                    Unatumia v{APP_VERSION}. Pakua APK mpya kisha isakinishse juu ya
+                    lililopo — data yako haitapotea.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Btn onClick={() => void openExternal(upd.url)}>
+                  <Download size={16} /> Pakua sasisho
+                </Btn>
+                <Btn variant="outline" onClick={() => void openExternal(upd.page)}>
+                  <ExternalLink size={16} /> Mabadiliko
+                </Btn>
+              </div>
+            </>
+          ) : upd.state === 'current' ? (
+            <div className="flex items-start gap-3">
+              <CheckCheck size={18} className="mt-0.5 shrink-0 text-brand-700" />
+              <div className="min-w-0 text-sm">
+                <div className="font-extrabold">Uko na toleo la hivi karibuni</div>
+                <p className="mt-0.5 text-muted">
+                  Toleo lako: v{APP_VERSION}. Hakuna kipya kilichotolewa.
+                </p>
+              </div>
+            </div>
+          ) : upd.state === 'offline' ? (
+            <div className="flex items-start gap-3">
+              <WifiOff size={18} className="mt-0.5 shrink-0 text-slate-500" />
+              <div className="min-w-0 text-sm">
+                <div className="font-extrabold">Hakuna mtandao</div>
+                <p className="mt-0.5 text-muted">
+                  KodiSalama inafanya kazi bila mtandao. Jaribu kukagua ukiwa na intaneti.
+                </p>
+              </div>
+            </div>
+          ) : upd.state === 'error' ? (
+            <div className="flex items-start gap-3">
+              <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-600" />
+              <div className="min-w-0 text-sm">
+                <div className="font-extrabold">Haiwezekwa kukagua sasa</div>
+                <p className="mt-0.5 text-muted">
+                  Toleo lako: v{APP_VERSION}. Jaribu tena baadaye.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3">
+              <RefreshCw size={18} className="mt-0.5 shrink-0 text-slate-500" />
+              <div className="min-w-0 text-sm">
+                <div className="font-extrabold">Toleo lako: v{APP_VERSION}</div>
+                <p className="mt-0.5 text-muted">
+                  Bonyeza ili kukagua kama kuna toleo jipya lililotolewa.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {upd.state !== 'available' && (
+            <Btn
+              variant="outline"
+              full
+              className="mt-3"
+              disabled={upd.state === 'checking'}
+              onClick={() => void runCheck()}
+            >
+              <RefreshCw
+                size={16}
+                className={upd.state === 'checking' ? 'animate-spin' : ''}
+              />
+              {upd.state === 'checking' ? 'Inakagua…' : 'Angalia sasisho'}
+            </Btn>
+          )}
+
+          <p className="mt-3 text-xs leading-relaxed text-muted">
+            Kukagua sasisho na kubonyeza viungo ndivyo vinavyohitaji intaneti.
+            Data yako, mikataba na risiti zote zinabaki kwenye simu yako.
+          </p>
+        </div>
+      </Card>
+
       {/* ---------------------------- Credits ---------------------------- */}
       <Card className="mb-4">
         <h2 className="text-lg leading-snug font-extrabold">Marejeleo na Haki Miliki</h2>
@@ -692,14 +807,15 @@ export default function Settings() {
           <div className="min-w-0 text-sm leading-relaxed">
             <div className="font-extrabold">Bendera ya Tanzania</div>
             <div className="mt-0.5 text-muted">{FLAG_CREDIT}</div>
-            <a
+            <button
+              type="button"
+              onClick={() =>
+                void openExternal('https://commons.wikimedia.org/wiki/File:Flag_of_Tanzania.svg')
+              }
               className="mt-1 inline-block text-xs font-semibold text-brand-700 underline"
-              href="https://commons.wikimedia.org/wiki/File:Flag_of_Tanzania.svg"
-              target="_blank"
-              rel="noreferrer"
             >
               Chanzo: Wikimedia Commons
-            </a>
+            </button>
             <p className="mt-2 text-xs leading-relaxed text-muted">
               Faili hii ni ya umma (public domain), hivyo inaweza kutumika bila vikwazo.
               Nembo ya Taifa (coat of arms) haikutumika kwa sababu ni ya kulindwa
