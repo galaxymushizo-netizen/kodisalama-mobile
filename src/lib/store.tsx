@@ -35,8 +35,10 @@ export const emptyData = (): AppData => ({
     reminder:
       'Habari {jina}, hii ni kumbusho kwamba kodi ya {mwezi} ya {kiasi} bado inadaiwa. Tafadhali lipa kabla ya {tarehe}. Asante. - {mwenye_nyumba}',
   },
-  // 07:00 by default; the user can pick any time in Mipangilio.
-  notifications: { enabled: false, hour: 7, minute: 0 },
+  // 07:00 by default; the user can pick any time in Mipangilio. `important`
+  // is on by default — it only ever notifies when permission was already
+  // granted, so a fresh install stays silent until the user opts in.
+  notifications: { enabled: false, hour: 7, minute: 0, important: true },
 })
 
 const load = (): AppData => {

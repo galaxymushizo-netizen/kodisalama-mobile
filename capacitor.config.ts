@@ -1,15 +1,13 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.kodisalama.app',
-  appName: 'KodiSalama',
+  appId: 'com.findtrack.app',
+  appName: 'FindTrack',
   webDir: 'dist',
   plugins: {
-    // Status-bar icon for every scheduled reminder. `ic_stat_key` is the white
-    // key vector in android/app/src/main/res/drawable; Android tints it white.
     LocalNotifications: {
       smallIcon: 'ic_stat_key',
-      iconColor: '#15803d',
+      iconColor: '#16a34a',
     },
   },
 };

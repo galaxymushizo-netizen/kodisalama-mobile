@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">KodiSalama</string>
-    <string name="title_activity_main">KodiSalama</string>
-    <string name="package_name">com.kodisalama.app</string>
-    <string name="custom_url_scheme">com.kodisalama.app</string>
+    <string name="app_name">FindTrack</string>
+    <string name="title_activity_main">FindTrack</string>
+    <string name="package_name">com.findtrack.app</string>
+    <string name="custom_url_scheme">com.findtrack.app</string>
 </resources>

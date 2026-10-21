@@ -54,11 +54,16 @@ export type Templates = {
   reminder: string
 }
 
-/** User-chosen daily rent reminder. `enabled` drives the scheduled alarm. */
+/**
+ * User-chosen daily rent reminder. `enabled` drives the scheduled alarm.
+ * `important` is a separate switch for the on-launch scan: it fires a real
+ * notification when a tenant is in debt or a contract is about to run out.
+ */
 export type NotificationSettings = {
   enabled: boolean
   hour: number
   minute: number
+  important: boolean
 }
 
 export type AppData = {
