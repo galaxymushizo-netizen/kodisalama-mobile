@@ -3,6 +3,9 @@
 **Usimamizi wa Wapangaji** — a phone-first rental management app for Tanzanian landlords.
 Swahili UI, offline-first, ships as an **Android APK** (and also runs in any browser as a PWA).
 
+> 🌐 **Live:** https://galaxymushizo-netizen.github.io/kodisalama-mobile/
+> 📦 **APK download:** https://github.com/galaxymushizo-netizen/kodisalama-mobile/releases/latest
+
 ---
 
 ## Modules (tabs)
@@ -36,7 +39,8 @@ First launch asks you to register with your name, phone number and a **4–6 dig
 
 ## Live web app (GitHub Pages)
 
-A GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and deploys the PWA on every push to `main`:
+A GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and deploys the PWA on every push to `main`.
+Pages is configured with **build type = workflow**, so the site is rebuilt from source each time — there is no committed build output in the repo. Every push redeploys:
 
 ```bash
 git push origin main          # → https://<user>.github.io/kodisalama-mobile/
